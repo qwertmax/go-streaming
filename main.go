@@ -16,16 +16,21 @@ func ingest() <-chan []string {
 	return out
 }
 
-func process(concurrency int, in <-chan []string) <-chan int {
+func process(concurrency int, in <-chan []string) <-chan string {
 	var wg sync.WaitGroup
 	wg.Add(concurrency)
 
-	out := make(chan int)
+	out := make(chan string)
 
 	work := func() {
 		for data := range in {
 			for _, word := range data {
-				out <- len(word)
+				// do any changes here
+				word = word + " maxi"
+
+				// pull out results
+				out <- word
+				// out <- len(word)
 			}
 		}
 		wg.Done()
@@ -46,7 +51,7 @@ func process(concurrency int, in <-chan []string) <-chan int {
 	return out
 }
 
-func store(in <-chan int) <-chan struct{} {
+func store(in <-chan string) <-chan struct{} {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
