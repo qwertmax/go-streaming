@@ -26,27 +26,40 @@ func process(in <-chan []string) <-chan string {
 	var wg sync.WaitGroup
 	wg.Add(4)
 
-	work := func() {
-		for val := range in {
+	out := make(chan string)
 
+	work := func() {
+		for str := range in {
+			for _, val := range str {
+				val = val + "!"
+				out <- val
+			}
 		}
+		wg.Done()
 	}
 
+	go func() {
+		for i := 0; i < 4; i++ {
+			go work()
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+
+	return out
 }
 
-func save(in <-chan []string) <-chan struct{} {
+func save(in <-chan string) <-chan struct{} {
 	done := make(chan struct{})
 
 	go func() {
 		defer close(done)
 
 		for val := range in {
-			// fmt.Printf("%#v\n", val[0])
-			fmt.Printf("%#v\n", val[0])
-
-			// for k, v := range val {
-			// 	fmt.Printf("key %d: %s\n", k, v)
-			// }
+			fmt.Printf("%#v\n", val)
 		}
 	}()
 
@@ -56,5 +69,7 @@ func save(in <-chan []string) <-chan struct{} {
 func main() {
 	in := load()
 
-	<-save(in)
+	out := process(in)
+
+	<-save(out)
 }
