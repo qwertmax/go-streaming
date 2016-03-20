@@ -9,10 +9,6 @@ func load() <-chan []string {
 	out := make(chan []string)
 
 	go func() {
-		// out <- []string{"111", "222", "333"}
-		// out <- []string{"444", "555", "666"}
-		// out <- []string{"777", "888", "999"}
-
 		for i := 0; i < 10; i++ {
 			out <- []string{fmt.Sprintf("%d", i)}
 		}
